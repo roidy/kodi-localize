@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { copyFileSync, existsSync, fstat, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync } from 'fs';
 import PO = require('pofile');
 import fetch from 'node-fetch';
 import path = require('path');
@@ -20,7 +20,7 @@ async function loadSkinPO() {
 
     console.log(poFile);
     console.log(path.sep);
-    
+
 
     return new Promise((resolve, reject) => {
         PO.load(poFile,
@@ -70,20 +70,23 @@ function writeSkinPO(po: PO) {
         if (err) {
             console.log('Error saving new PO');
         }
-     });
+    });
 }
 
 
 //
 // Check a PO file for a matching string
 //
-function checkPO(word: String, po: PO) {
+function checkPO(word: String, short: Boolean, po: PO) {
     // Find word in po
     const item = po.items.find((v) => v.msgid === word);
     if (item) {
-        return `$LOCALIZE[${item.msgctxt?.substring(1)}]`;
+        if (short) {
+            return `${item.msgctxt?.substring(1)}`;
+        } else {
+            return `$LOCALIZE[${item.msgctxt?.substring(1)}]`;
+        }
     }
-    return undefined;
 }
 
 //
@@ -111,7 +114,7 @@ function createPO(word: String, po: PO) {
 //
 // Main localization function
 //
-async function doLocalize() {
+async function doLocalize(short: Boolean = false) {
     // Load skin PO file and exit early on error
     var skinPO = await loadSkinPO();
     if (skinPO instanceof Error) { return; }
@@ -128,7 +131,7 @@ async function doLocalize() {
         }
 
         // First check if the string exists in the Kodi String file
-        var id = checkPO(value, kodiPO);
+        var id = checkPO(value, short, kodiPO);
         if (id) {
             editor.edit(editBuilder => {
                 editBuilder.replace(selection, id!);
@@ -136,7 +139,7 @@ async function doLocalize() {
             return;
         }
         // Next check if the string exists in the skin String file
-        var id = checkPO(value, (skinPO as PO));
+        var id = checkPO(value, short, (skinPO as PO));
         if (id) {
             editor.edit(editBuilder => {
                 editBuilder.replace(selection, id!);
@@ -145,7 +148,7 @@ async function doLocalize() {
         }
         // If no string exists create a new one in the skin string file
         createPO(value, (skinPO as PO));
-        var id = checkPO(value, (skinPO as PO));
+        var id = checkPO(value, short, (skinPO as PO));
         if (id) {
             editor.edit(editBuilder => {
                 editBuilder.replace(selection, id!);
@@ -160,9 +163,15 @@ export async function activate(context: vscode.ExtensionContext) {
     // load kodi po from github, only done once pre activation
     kodiPO = await loadKodiPO();
 
-    // Register 'Localize' command
+    // Register 'Localize Id Only' command
     context.subscriptions.push(
-        vscode.commands.registerCommand('kodi-localize.Localize', () => {
+        vscode.commands.registerCommand('kodi-localize.LocalizeIDOnly', () => {
+            doLocalize(true);
+        })
+    );
+    // Register 'Localize $LOCALIZE[]' command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kodi-localize.LocalizeFull', () => {
             doLocalize();
         })
     );

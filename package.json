@@ -10,20 +10,28 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:kodi-localize.Localize"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "kodi-localize.Localize",
-				"title": "Kodi: Localize"
+				"command": "kodi-localize.LocalizeIDOnly",
+				"title": "Kodi: Localize ID"
+			},
+			{
+				"command": "kodi-localize.LocalizeFull",
+				"title": "Kodi: $LOCALIZE[]"
 			}
 		],
 		"menus": {
 			"editor/context": [
 				{
-					"command": "kodi-localize.Localize",
+					"command": "kodi-localize.LocalizeIDOnly",
+					"group": "YourGroup@1"
+				},
+				{
+					"command": "kodi-localize.LocalizeFull",
 					"group": "YourGroup@1"
 				}
 			]
