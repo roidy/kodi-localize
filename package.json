@@ -2,7 +2,7 @@
 	"name": "kodi-localize",
 	"displayName": "Kodi Localize",
 	"description": "Kodi localize helpers",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"engines": {
 		"vscode": "^1.66.0"
 	},
@@ -10,7 +10,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*"
+		"onCommand:kodi-localize.LocalizeIDOnly",
+		"onCommand:kodi-localize.LocalizeFull"
+		
 	],
 	"main": "./out/extension.js",
 	"contributes": {
