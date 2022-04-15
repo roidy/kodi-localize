@@ -5,22 +5,21 @@ import { copyFileSync, existsSync, mkdirSync } from 'fs';
 import PO = require('pofile');
 import fetch from 'node-fetch';
 import path = require('path');
+import { TextDecoder } from 'util';
 
 var kodiPO: PO;
+var globalSkinPO: PO | Error;
+var skinPOUpdated: Boolean = true;
 var sep = path.sep;
 
 //
 // Load local skin PO file
 //
-async function loadSkinPO() {
+async function loadSkinPO(): Promise<PO | Error> {
     let editor = vscode.window.activeTextEditor;
     const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
 
     const poFile = folder!.uri.fsPath + `${sep}language${sep}resource.language.en_gb${sep}strings.po`;
-
-    console.log(poFile);
-    console.log(path.sep);
-
 
     return new Promise((resolve, reject) => {
         PO.load(poFile,
@@ -63,7 +62,6 @@ function writeSkinPO(po: PO) {
         mkdirSync(backupPoDirectory);
     }
 
-    console.log(backupPoFile);
     copyFileSync(poFile, backupPoFile);
 
     po.save(poFile, function (err) {
@@ -71,6 +69,8 @@ function writeSkinPO(po: PO) {
             console.log('Error saving new PO');
         }
     });
+    // Update global skin po
+    globalSkinPO = po;
 }
 
 
@@ -87,6 +87,20 @@ function checkPO(word: String, short: Boolean, po: PO) {
             return `$LOCALIZE[${item.msgctxt?.substring(1)}]`;
         }
     }
+}
+
+//
+// Given an ID value look up the string 
+//
+function idToPoString(id: String, po: PO) {
+    console.log(`idToPoString: id=${id}`);
+    console.log(po);
+    // Find word in po
+    const item = po.items.find((v) => v.msgctxt === `#${id}`);
+    if (item) {
+        return item.msgid;
+    }
+    return '';
 }
 
 //
@@ -162,6 +176,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // load kodi po from github, only done once pre activation
     kodiPO = await loadKodiPO();
+    // load skin po in to global space
+    globalSkinPO = await loadSkinPO();
 
     // Register 'Localize Id Only' command
     context.subscriptions.push(
@@ -175,7 +191,122 @@ export async function activate(context: vscode.ExtensionContext) {
             doLocalize();
         })
     );
+
+    // Set up line decoration
+    let timeout: NodeJS.Timer | undefined = undefined;
+    let activeEditor = vscode.window.activeTextEditor;
+    const decorationType = vscode.window.createTextEditorDecorationType({});
+
+    function decorationMessage(text: string) {
+        const msgOut = (s: string) => ({
+            after: {
+                contentText: s,
+                margin: "20",
+                color: "#ffffff60"
+            }
+        });
+        return msgOut(text);
+    }
+
+    function decoration(line: number, text: string) {
+        const a = {
+            renderOptions: {
+                ...decorationMessage(text)
+            },
+            range: new vscode.Range(
+                new vscode.Position(line, 1024),
+                new vscode.Position(line, 1024)
+            )
+        };
+        return a;
+    }
+
+    function checkForLocalizeID(i: number, line: vscode.TextLine) {
+        // early test for number in line, if no number then exit early
+        // var r= /\d+/g;
+        var r = /(\$LOCALIZE\[)\d+(\])|(\<label\>)\d+(\<\/label\>)|(\$INFO\[.*)\d+(.*\])|(label=\")\d+(\")/ig;
+        var matches = line.text.match(r);
+        if (!matches) {
+            return undefined;
+        }
+
+        var dtext: string = '';
+        matches.forEach((m) => {
+            var r = /\d+/g;
+            var matches = m.match(r);
+            if (matches) {
+                matches.forEach((m) => {
+                    console.log(`m=${m}`);
+                    var id = parseInt(m);
+                    var t: string = '';
+                    if (id < 31000 || id > 31999) {
+                        t = idToPoString(m, kodiPO);
+                    } else {
+                        t = idToPoString(m, (globalSkinPO as PO));
+                    }
+                    console.log(t);
+                    if (t !== '') {
+                        dtext = dtext.concat(' • ', t);
+                    }
+                });
+            }
+        });
+
+        return decoration(i, `${dtext}`);
+    }
+
+    async function updateDecorations() {
+        if (!activeEditor) {
+            return;
+        }
+
+        const decorations: vscode.DecorationOptions[] = [];
+        activeEditor.setDecorations(decorationType, []);
+
+        const text = activeEditor.document.getText();
+        let arr = {};
+        for (let i = 0; i < activeEditor.document.lineCount; ++i) {
+            const line = activeEditor.document.lineAt(i);
+            var decObj = checkForLocalizeID(i, line);
+            if (decObj) {
+                decorations.push(decObj);
+            }
+        }
+        activeEditor.setDecorations(decorationType, decorations);
+    }
+
+    function triggerUpdateDecorations(throttle = false) {
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = undefined;
+        }
+        if (throttle) {
+            timeout = setTimeout(updateDecorations, 500);
+        } else {
+            updateDecorations();
+        }
+    }
+
+    if (activeEditor) {
+        triggerUpdateDecorations();
+    }
+
+    vscode.window.onDidChangeActiveTextEditor(async editor => {
+        activeEditor = editor;
+        if (editor) {
+            globalSkinPO = await loadSkinPO();
+            triggerUpdateDecorations();
+        }
+    }, null, context.subscriptions);
+
+    vscode.workspace.onDidChangeTextDocument(event => {
+        if (activeEditor && event.document === activeEditor.document) {
+            triggerUpdateDecorations(true);
+        }
+    }, null, context.subscriptions);
 }
 
 // Extention deactivated
 export function deactivate() { }
+
+
