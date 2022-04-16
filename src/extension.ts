@@ -93,8 +93,8 @@ function checkPO(word: String, short: Boolean, po: PO) {
 // Given an ID value look up the string 
 //
 function idToPoString(id: String, po: PO) {
-    console.log(`idToPoString: id=${id}`);
-    console.log(po);
+    // console.log(`idToPoString: id=${id}`);
+    // console.log(po);
     // Find word in po
     const item = po.items.find((v) => v.msgctxt === `#${id}`);
     if (item) {
@@ -236,7 +236,7 @@ export async function activate(context: vscode.ExtensionContext) {
             var matches = m.match(r);
             if (matches) {
                 matches.forEach((m) => {
-                    console.log(`m=${m}`);
+                    // console.log(`m=${m}`);
                     var id = parseInt(m);
                     var t: string = '';
                     if (id < 31000 || id > 31999) {
@@ -244,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     } else {
                         t = idToPoString(m, (globalSkinPO as PO));
                     }
-                    console.log(t);
+                    // console.log(t);
                     if (t !== '') {
                         dtext = dtext.concat(' • ', t);
                     }

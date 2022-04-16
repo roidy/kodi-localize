@@ -2,7 +2,7 @@
     "name": "kodi-localize",
     "displayName": "Kodi Localize",
     "description": "Kodi localize helpers",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "engines": {
         "vscode": "^1.66.0"
     },
