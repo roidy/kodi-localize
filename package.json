@@ -2,43 +2,59 @@
     "name": "kodi-localize",
     "displayName": "Kodi Localize",
     "description": "Kodi localize helpers",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "engines": {
         "vscode": "^1.66.0"
     },
     "categories": [
         "Other"
     ],
+    "icon": "",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/roidy/kodi-localize.git"
+    },
+    "homepage": "https://github.com/roidy/kodi-localize/blob/master/README.md",
     "activationEvents": [
-        "onCommand:kodi-localize.LocalizeIDOnly",
-        "onCommand:kodi-localize.LocalizeFull",
+        "onCommand:kodi-localize.Localize",
         "workspaceContains:**/*.xml"
     ],
     "main": "./out/extension.js",
     "contributes": {
         "commands": [
             {
-                "command": "kodi-localize.LocalizeIDOnly",
-                "title": "Kodi: Localize ID"
-            },
-            {
-                "command": "kodi-localize.LocalizeFull",
-                "title": "Kodi: $LOCALIZE[]"
+                "command": "kodi-localize.Localize",
+                "title": "Kodi: Localize"
             }
         ],
         "menus": {
             "editor/context": [
                 {
-                    "command": "kodi-localize.LocalizeIDOnly",
-                    "group": "YourGroup@1",
-                    "when": "resourceExtname == .xml"
-                },
-                {
-                    "command": "kodi-localize.LocalizeFull",
-                    "group": "YourGroup@1",
+                    "command": "kodi-localize.Localize",
+                    "group": "1_kodilocalizer",
                     "when": "resourceExtname == .xml"
                 }
             ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Kodi Localizer",
+            "properties": {
+                "kodilocalize.decoratorColor": {
+                    "type": "string",
+                    "format": "color-hex",
+                    "default": "#ffffff60",
+                    "description": "Decoration color #rrggbbaa"
+                },
+                "kodilocalize.operation": {
+                    "type": "string",
+                    "default": "ID Only",
+                    "enum": [
+                        "ID Only",
+                        "$LOCALIZE[]"
+                    ]
+                }
+            }
         }
     },
     "scripts": {
