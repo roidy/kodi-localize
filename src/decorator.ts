@@ -8,8 +8,8 @@ import {idToPoString} from './localize';
 function decorationMessage(text: string) {
     const msgOut = (s: string) => ({
         after: {
+            margin: '16px',
             contentText: s,
-            margin: "20",
             color: "#ffffff60"
         }
     });
@@ -30,16 +30,23 @@ function decoration(line: number, text: string) {
 }
 
 export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO, kodiPO: PO) {
-    // early test for number in line, if no number then exit early
     // var r= /\d+/g;
+    // test for number in line, if no number then exit early
     var r = /(\$LOCALIZE\[)\d+(\])|(\<label\>)\d+(\<\/label\>)|(\$INFO\[.*)\d+(.*\])|(label=\")\d+(\")/ig;
     var matches = line.text.match(r);
     if (!matches) {
         return undefined;
     }
-
     var dtext: string = '';
     matches.forEach((m) => {
+        // massive hack for my lack of regex knowlage
+        // remove false positives for 'Property(xxxxx)'
+        var r = /(\Property\(.*)\d+(.*\))/ig;
+        var pM = m.match(r);
+        if (pM) {
+            m = m.replace(pM[0], '');
+        }
+
         var r = /\d+/g;
         var matches = m.match(r);
         if (matches) {
