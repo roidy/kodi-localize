@@ -1,2 +1,3 @@
-Kodi Localizer v0.1-alpha
+Kodi Localizer
 
+Simple VS Code extension to help localize Kodi skins
