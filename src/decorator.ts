@@ -40,8 +40,8 @@ export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO,
     var dtext: string = '';
     matches.forEach((m) => {
         // massive hack for my lack of regex knowlage
-        // remove false positives for 'Property(xxxxx)'
-        var r = /(\Property\(.*)\d+(.*\))/ig;
+        // remove false positives for 'Property(xxxxx)', 'Control(xxxxx)' and 'Container(xxxxx)'
+        var r = /(\Property\(.*)\d+(.*\))|(\Control\(.*)\d+(.*\))|(\Container\(.*)\d+(.*\))/ig;
         var pM = m.match(r);
         if (pM) {
             m = m.replace(pM[0], '');
