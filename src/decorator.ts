@@ -32,7 +32,7 @@ function decoration(line: number, text: string) {
 export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO, kodiPO: PO) {
     // var r= /\d+/g;
     // test for number in line, if no number then exit early
-    var r = /(\$LOCALIZE\[)\d+(\])|(\<label\>)\d+(\<\/label\>)|(\$INFO\[.*)\d+(.*\])|(label=\")\d+(\")/ig;
+    var r = /(\$LOCALIZE\[)\d+(\])|(\<label\>)\d+(\<\/label\>)|(\$INFO\[.*)\d+(.*\])|(label=\")\d+(\")|(labelID=\")\d+(\")/ig;
     var matches = line.text.match(r);
     if (!matches) {
         return undefined;
@@ -41,7 +41,7 @@ export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO,
     matches.forEach((m) => {
         // massive hack for my lack of regex knowlage
         // remove false positives for 'Property(xxxxx)', 'Control(xxxxx)' and 'Container(xxxxx)'
-        var r = /(\Property\(.*)\d+(.*\))|(\Control\(.*)\d+(.*\))|(\Container\(.*)\d+(.*\))/ig;
+        var r = /(\Property\(.*)\d+(.*\))|(\Control\(.*)\d+(.*\))|(\Container\(.*)\d+(.*\))|(\ListItem\(.*)\d+(.*\))/ig;
         var pM = m.match(r);
         if (pM) {
             m = m.replace(pM[0], '');
