@@ -137,7 +137,7 @@ export function doSwap() {
 
         const selectionText = document.getText(selection);
 
-        // if selection anything other than number then exit
+        // if selection contains anything other than numbers then exit
         var r = /^[0-9]*$/g;
         var matches = selectionText.match(r);
         if (!matches) { return; }
