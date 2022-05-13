@@ -174,34 +174,22 @@ class KodiDefinitionProvider implements vscode.DefinitionProvider {
             return;
         }
         let workingDir = path.dirname(document.fileName);
-        // let workingDir = vscode.workspace.getWorkspaceFolder(editor!.document.uri)!.uri.fsPath;
         let word = document.getText(document.getWordRangeAtPosition(position));
         let line = document.lineAt(position);
-        let matcher = null;
-
-        console.log('====== peek-file definition lookup ===========');
-        console.log('workingdir: ' + workingDir);
-        console.log('word: ' + word);
-        console.log('line: ' + line.text);
+        let matcher;
 
         // Is $EXP or $VAR
         if (line.text.toLowerCase().indexOf(`$exp[${word.toLowerCase()}]`) !== -1) {
             matcher = `<expression name="${word.toLowerCase()}">`;
             console.log('found exp');
-        }
-        if (line.text.toLowerCase().indexOf(`$var[${word.toLowerCase()}]`) !== -1) {
+        } else if (line.text.toLowerCase().indexOf(`$var[${word.toLowerCase()}]`) !== -1) {
             matcher = `<variable name="${word.toLowerCase()}">`;
             console.log('found exp');
-        }
-        if (matcher === null) {
+        } else {
             return;
         }
 
-
-        console.time('benchmark');
         const r = this.searchFilesInDirectory(workingDir, matcher, '.xml');
-        console.timeEnd('benchmark');
-        console.log(r);
 
         if (r !== undefined) {
             return new vscode.Location(vscode.Uri.file(r.file), new vscode.Position(r.lineNumber - 1, 1));
