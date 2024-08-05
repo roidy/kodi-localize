@@ -9,10 +9,6 @@ const lineReader = require('n-readlines');
 
 export async function activate(context: vscode.ExtensionContext) {
 
-    // Setup and load global po
-    var kodiPO: PO = await Localize.loadKodiPO();
-    var skinPO: any = await Localize.loadSkinPO();
-
     // Set up line decoration
     let timeout: NodeJS.Timer | undefined = undefined;
     let activeEditor = vscode.window.activeTextEditor;
@@ -20,8 +16,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     var config = vscode.workspace.getConfiguration('kodilocalize');
     var decoratorColor: any = config.get('decoratorColor');
+    var countryCode: any = config.get('countryCode');
     var operation: any = config.get('operation');
     operation = (operation === 'ID Only') ? true : false;
+
+    // Setup and load global po
+    var kodiPO: PO = await Localize.loadKodiPO();
+    var skinPO: any = await Localize.loadSkinPO(countryCode);
 
     // On activation update decorators
     if (activeEditor) {
@@ -35,7 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Register 'Localize' command
     context.subscriptions.push(
         vscode.commands.registerCommand('kodi-localize.Localize', async () => {
-            skinPO = await Localize.doLocalize(kodiPO, operation);
+            skinPO = await Localize.doLocalize(kodiPO, operation, countryCode);
         })
     );
 
@@ -60,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
         activeEditor = editor;
         if (editor) {
             // On editor change reload skin po in case it was manually edited
-            skinPO = await Localize.loadSkinPO();
+            skinPO = await Localize.loadSkinPO(countryCode);
             triggerUpdateDecorations();
         }
     }, null, context.subscriptions);

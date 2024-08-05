@@ -7,12 +7,12 @@ import { copyFileSync, existsSync, mkdirSync } from 'fs';
 //
 // Load local skin PO file
 //
-export async function loadSkinPO(): Promise<any> {
+export async function loadSkinPO(countryCode: string): Promise<any> {
     let editor = vscode.window.activeTextEditor;
     var poFile: string;
     if (editor?.document.uri) {
         const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
-        poFile = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.en_gb${path.sep}strings.po`;
+        poFile = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.${countryCode}${path.sep}strings.po`;
     }
     return new Promise((resolve, reject) => {
         PO.load(poFile,
@@ -235,9 +235,9 @@ export function checkNumber(selection: vscode.Selection): boolean {
 //
 // Main localization function
 //
-export async function doLocalize(kodiPO: PO, short: Boolean = false) {
+export async function doLocalize(kodiPO: PO, short: Boolean = false, countryCode: any) {
     // Load skin PO file and exit early on error
-    var skinPO = await loadSkinPO();
+    var skinPO = await loadSkinPO(countryCode);
     if (skinPO instanceof Error) { return; }
 
     let editor = vscode.window.activeTextEditor;

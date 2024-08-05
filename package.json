@@ -3,7 +3,7 @@
     "displayName": "Kodi Localize",
     "description": "Kodi localize helpers",
     "publisher": "roidy",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "engines": {
         "vscode": "^1.66.0"
     },
@@ -54,6 +54,10 @@
                         "ID Only",
                         "$LOCALIZE[]"
                     ]
+                },
+                "kodilocalize.countryCode": {
+                    "type": "string",
+                    "default": "en_gb"
                 }
             }
         }
