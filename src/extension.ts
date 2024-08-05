@@ -174,17 +174,20 @@ class KodiDefinitionProvider implements vscode.DefinitionProvider {
             return;
         }
         let workingDir = path.dirname(document.fileName);
-        let word = document.getText(document.getWordRangeAtPosition(position));
-        let line = document.lineAt(position);
+        let word = document.getText(document.getWordRangeAtPosition(position)).toLowerCase();
+        let line = document.lineAt(position).text.toLowerCase();
         let matcher;
 
         // Is $EXP or $VAR
-        if (line.text.toLowerCase().indexOf(`$exp[${word.toLowerCase()}]`) !== -1) {
-            matcher = `<expression name="${word.toLowerCase()}">`;
+        if (line.indexOf(`$exp[${word.toLowerCase()}]`) !== -1) {
+            matcher = `<expression name="${word}">`;
             console.log('found exp');
-        } else if (line.text.toLowerCase().indexOf(`$var[${word.toLowerCase()}]`) !== -1) {
-            matcher = `<variable name="${word.toLowerCase()}">`;
-            console.log('found exp');
+        } else if (line.indexOf(`$var[${word.toLowerCase()}]`) !== -1) {
+            matcher = `<variable name="${word}">`;
+            console.log('found var');
+        } else if (line.indexOf(`include`) !== -1) {
+            matcher = `<include name="${word}">`;
+            console.log('found include');
         } else {
             return;
         }
