@@ -18,9 +18,7 @@ export async function loadSkinPO(countryCode: string): Promise<any> {
         PO.load(poFile,
             (err, po) => {
                 if (err) {
-                    // on error return the error
-                    vscode.window.showErrorMessage('Error: Unable to open skin string file.');
-                    resolve(err);
+                    resolve(null);
                 } else {
                     resolve(po);
                 }
@@ -36,7 +34,7 @@ export async function loadSkinPO(countryCode: string): Promise<any> {
 export async function loadKodiPO() {
     const response = await fetch('https://raw.githubusercontent.com/xbmc/xbmc/master/addons/resource.language.en_gb/resources/strings.po');
     if (response.status !== 200) {
-        vscode.window.showErrorMessage('Error: Unable to load Kodi skin strings file from GitHub.');
+        return null;
     }
     const body = await response.text();
     const po = PO.parse(body);
@@ -46,14 +44,14 @@ export async function loadKodiPO() {
 //
 // Write new skin PO file
 //
-export function writeSkinPO(po: PO) {
+export function writeSkinPO(po: PO, countryCode: String) {
     let editor = vscode.window.activeTextEditor;
     if (editor!.document.uri) {
         const folder = vscode.workspace.getWorkspaceFolder(editor!.document.uri);
         const stamp = new Date().toISOString().replace(/:/gi, '');
-        const backupPoDirectory = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.en_gb${path.sep}backup${path.sep}`;
+        const backupPoDirectory = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.${countryCode}${path.sep}backup${path.sep}`;
         const backupPoFile = `${backupPoDirectory}${stamp}.po`;
-        const poFile = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.en_gb${path.sep}strings.po`;
+        const poFile = folder!.uri.fsPath + `${path.sep}language${path.sep}resource.language.${countryCode}${path.sep}strings.po`;
 
         if (!existsSync(backupPoDirectory)) {
             mkdirSync(backupPoDirectory);
@@ -93,16 +91,16 @@ export function idToPoString(id: String, po: PO) {
     if (item) {
         return item.msgid;
     }
-    return '';
+    return null;
 }
 
 //
 // Create a new localization and resave the skin string file
 //
-export function createPO(word: String, po: PO) {
+export function createPO(word: String, po: PO, countryCode: String) {
     // Find first free #id in po file
     var item;
-    for (var i = 31000; i < 32000; i++) {
+    for (var i = 31000; i < 34000; i++) {
         item = po.items.find((v) => v.msgctxt === `#${i}`);
         if (!item) {
             var newItem = new PO.Item();
@@ -111,7 +109,7 @@ export function createPO(word: String, po: PO) {
             var newPO = po.items.concat(newItem);
             po.items = newPO;
             po.items.sort((a, b) => (a > b ? 1 : -1));
-            writeSkinPO(po);
+            writeSkinPO(po, countryCode);
             break;
         }
     }
@@ -238,7 +236,11 @@ export function checkNumber(selection: vscode.Selection): boolean {
 export async function doLocalize(kodiPO: PO, short: Boolean = false, countryCode: any) {
     // Load skin PO file and exit early on error
     var skinPO = await loadSkinPO(countryCode);
-    if (skinPO instanceof Error) { return; }
+    // if (skinPO instanceof Error) { return; }
+    if (skinPO === null) { 
+        vscode.window.showErrorMessage('Error: Unable to open skin string file.');
+        return;
+    }
 
     let editor = vscode.window.activeTextEditor;
     const document = editor!.document;
@@ -278,7 +280,7 @@ export async function doLocalize(kodiPO: PO, short: Boolean = false, countryCode
         return skinPO;
     }
     // If no string exists create a new one in the skin string file
-    skinPO = createPO(value, (skinPO as PO));
+    skinPO = createPO(value, (skinPO as PO), countryCode);
     var id = checkPO(value, short, skinPO);
     if (id) {
         editor.edit(editBuilder => {

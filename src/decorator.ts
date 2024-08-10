@@ -52,13 +52,13 @@ export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO,
         if (matches) {
             matches.forEach((m) => {
                 var id = parseInt(m);
-                var t: string = '';
-                if (id < 31000 || id > 31999) {
+                var t = null;
+                if (id < 31000 || id > 33999) {
                     t = idToPoString(m, kodiPO);
                 } else {
                     t = idToPoString(m, skinPO);
                 }
-                if (t !== '') {
+                if (t !== null) {
                     dtext = dtext.concat(' • ', t);
                 }
             });
