@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as Localize from './localize';
 import * as Decorator from './decorator';
-import {DefinitionProvider}  from './definition';
+import { DefinitionProvider } from './definition';
+import { ReferenceProvider } from './reference';
 import PO = require('pofile');
 
 
@@ -49,6 +50,12 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerDefinitionProvider('xml',
             new DefinitionProvider())
+    );
+
+    // Register reference provider
+    context.subscriptions.push(
+        vscode.languages.registerReferenceProvider('xml',
+            new ReferenceProvider())
     );
 
     //
