@@ -16,7 +16,7 @@ export class ReferenceProvider implements vscode.ReferenceProvider {
             return undefined;
         }
 
-        const r = utils.findWordInFiles(workingDir, word, '', false);
+        const r = utils.findWordInFiles(workingDir, word);
         return r;
     }
 

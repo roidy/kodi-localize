@@ -4,20 +4,18 @@ import {idToPoString} from './localize';
 
 //
 // Create the decoration message
-
 function decorationMessage(text: string) {
-    const msgOut = (s: string) => ({
+    return {
         after: {
             margin: '16px',
-            contentText: s,
+            contentText: text,
             color: "#ffffff60"
         }
-    });
-    return msgOut(text);
+    };
 }
 
 function decoration(line: number, text: string) {
-    const a = {
+    return {
         renderOptions: {
             ...decorationMessage(text)
         },
@@ -26,7 +24,6 @@ function decoration(line: number, text: string) {
             new vscode.Position(line, 1024)
         )
     };
-    return a;
 }
 
 export function checkForLocalizeID(i: number, line: vscode.TextLine, skinPO: PO, kodiPO: PO) {

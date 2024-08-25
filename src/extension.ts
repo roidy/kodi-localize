@@ -3,8 +3,6 @@ import * as Localize from './localize';
 import * as Decorator from './decorator';
 import { DefinitionProvider } from './definition';
 import { ReferenceProvider } from './reference';
-import PO = require('pofile');
-
 
 export async function activate(context: vscode.ExtensionContext) {
 
