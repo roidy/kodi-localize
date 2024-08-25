@@ -21,7 +21,13 @@ export class ReferenceProvider implements vscode.ReferenceProvider {
             while (line = lines.next()) {
                 lineNumber++;
                 if (line.includes(filter) && !line.includes('<!--')) {
-                    let loc = new vscode.Location(vscode.Uri.file(file), new vscode.Position(lineNumber - 1, 1));
+                    line = line.toString();
+                    let firstChar = line.indexOf(filter);
+                    let lastChar = firstChar + filter.length;
+                    let start = new vscode.Position(lineNumber - 1, firstChar);
+                    let end = new vscode.Position(lineNumber - 1, lastChar);
+                    let range = new vscode.Range(start, end);
+                    let loc = new vscode.Location(vscode.Uri.file(file), range);
                     locations.push(loc);
                 }
             }
