@@ -69,6 +69,11 @@ export class ReferenceProvider implements vscode.ReferenceProvider {
         let workingDir = path.dirname(document.fileName);
         const value = document.getText(selection);
 
+        if (!value) {
+            vscode.window.showWarningMessage('Please make a selection to find references for.');
+            return undefined;
+        }
+
         const r = this.searchFilesInDirectory(workingDir, value, '.xml');
 
         if (r !== undefined) {

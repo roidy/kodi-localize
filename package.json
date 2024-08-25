@@ -3,7 +3,7 @@
     "displayName": "Kodi Localize",
     "description": "Kodi localize helpers",
     "publisher": "roidy",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "engines": {
         "vscode": "^1.66.0"
     },
