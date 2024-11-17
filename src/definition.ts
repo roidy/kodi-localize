@@ -9,18 +9,20 @@ export class DefinitionProvider implements vscode.DefinitionProvider {
         _token: vscode.CancellationToken): vscode.Definition | undefined {
 
         const editor = vscode.window.activeTextEditor;
-        if (!editor!.document.uri) {
-            return;
-        }
-        const workingDir = path.dirname(document.fileName);
+        if (!editor!.document.uri) { return; }
+        let workingDir = path.dirname(document.fileName);
         const word = utils.getWord()?.toLowerCase();
+        if (!word) { return; }
+        const isNum = /^\d+$/.test(word);
         const line = document.lineAt(position).text.toLowerCase();
         let matcher;
 
-        if (!word) { return; }
 
         // Choose definition matcher
-        if (line.includes(`$exp[${word.toLowerCase()}`)) {
+        if (isNum) {
+            workingDir = vscode.workspace.getWorkspaceFolder(editor!.document.uri)?.uri.fsPath + `${path.sep}language`;
+            matcher = `msgctxt "#${word}"`;
+        } else if (line.includes(`$exp[${word.toLowerCase()}`)) {
             matcher = `<expression name="${word}"`;
         } else if (line.includes(`$var[${word.toLowerCase()}`)) {
             matcher = `<variable name="${word}"`;
@@ -29,7 +31,7 @@ export class DefinitionProvider implements vscode.DefinitionProvider {
         } else if (line.includes(`font`)) {
             matcher = `<name>${word}</name>`;
         } else {
-            return;
+            matcher = `<constant name="${word}"`;
         }
 
         const r = utils.findWordInFiles(workingDir, word, matcher, true);

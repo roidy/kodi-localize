@@ -17,12 +17,12 @@ export function getWord(): string | undefined {
 }
 
 // Search all files for occurances of word
-export function findWordInFiles(directory: string, targetWord: string, customMatcher?: string, findFirstMatch = false): vscode.Location[] {
+export function findWordInFiles(directory: string, targetWord: string, customMatcher?: string, findFirstMatch = false, excludeDir='backup'): vscode.Location[] {
     if (!fs.existsSync(directory)) {
         return [];
     }
 
-    const files = getFilesInDirectory(directory, '.xml');
+    const files = getFilesInDirectory(directory, ['.xml','.po'], excludeDir);
     const locations: vscode.Location[] = [];
 
     for (const file of files) {
@@ -52,7 +52,7 @@ export function findWordInFiles(directory: string, targetWord: string, customMat
 }
 
 // Recursivly return all files in a directory and sub-directorys
-function getFilesInDirectory(dir: string, ext: string): string[] {
+function getFilesInDirectory(dir: string, ext: string[], excludeDir: string): string[] {
     if (!fs.existsSync(dir)) { return []; }
 
     const files: string[] = [];
@@ -60,9 +60,10 @@ function getFilesInDirectory(dir: string, ext: string): string[] {
         const filePath = path.join(dir, file);
         const stat = fs.lstatSync(filePath);
 
-        if (stat.isDirectory()) {
-            files.push(...getFilesInDirectory(filePath, ext));
-        } else if (path.extname(file) === ext) {
+        if (stat.isDirectory() && filePath.indexOf(excludeDir) == -1) {
+            files.push(...getFilesInDirectory(filePath, ext, excludeDir));
+        } else if (ext.includes(path.extname(file))) {
+            console.log(path.extname(file));
             files.push(filePath);
         }
     });
